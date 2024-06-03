@@ -18,11 +18,10 @@ class AIHub:
     MODEL_AYA = "aya:8b"
     MODEL_PHI3 = "phi3:instruct"
     MODEL_MISTRAL = "mistral:instruct"
-    MODEL_CODESTRAL = "codegemma:22b" # For coding use cases
+    MODEL_CODESTRAL = "codestral:latest" # For coding use cases
     MODEL_GEMMA = "gemma:instruct"
     MODEL_CODEGEMMA = "codegemma:instruct" # For coding use cases
     MODEL_MIXTRAL_7b = "mixtral:latest"
-    MODEL_MIXTRAL_22b = "mixtral:8x22b" # Can fail depending on load.
     MODEL_WIZARDLM2 = "wizardlm2:7b"
 
     def __init__(self):
