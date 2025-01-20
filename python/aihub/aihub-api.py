@@ -13,16 +13,8 @@ class AIHub:
     PERSONALITY_JSON_ONLY = "You can only output JSON, no explanations."
     PERSONALITY_YAML_ONLY = "You can only output YAML, no explanations."
 
-    MODEL_LLAMA3_8B = "llama3:instruct" # Default and recommended model
-    MODEL_LLAMA3_LLAVA = "llava-llama3:latest" # For image generation
-    MODEL_AYA = "aya:8b"
-    MODEL_PHI3 = "phi3:instruct"
-    MODEL_MISTRAL = "mistral:instruct"
-    MODEL_CODESTRAL = "codestral:latest" # For coding use cases
-    MODEL_GEMMA = "gemma:instruct"
-    MODEL_CODEGEMMA = "codegemma:instruct" # For coding use cases
-    MODEL_MIXTRAL_7b = "mixtral:latest"
-    MODEL_WIZARDLM2 = "wizardlm2:7b"
+    MODEL_LLAMA33 = "llama3.3:latest" # Default and recommended model
+    MODEL_LLAMA32_VISION = "llama3.2-vision:latest" # For image generation
 
     def __init__(self):
         self.url = "https://ai.create.kcl.ac.uk/"
@@ -37,12 +29,12 @@ class AIHub:
     def check_model(self, model, images=False):
         if model == "auto":
             if images:
-                model = AIHub.MODEL_LLAVA
+                model = AIHub.MODEL_LLAMA32_VISION
             else:
-                model = AIHub.MODEL_LLAMA3_8B
+                model = AIHub.MODEL_LLAMA33
 
-        if images and model != AIHub.MODEL_LLAVA:
-            raise Exception("Images are only supported with the LLAMA3-LLAVA model")
+        if images and model != AIHub.MODEL_LLAMA32_VISION:
+            raise Exception("Images are only supported with the MODEL_LLAMA32_VISION model")
 
         return model
 
