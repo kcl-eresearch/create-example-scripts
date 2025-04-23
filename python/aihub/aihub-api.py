@@ -8,19 +8,11 @@ import requests
 
 
 class AIHub:
-    PERSONALITY_DEFAULT = "You are a helpful AI assistant."
-    PERSONALITY_COMMAND_ONLY = "You can only output commands, no explanations."
-    PERSONALITY_JSON_ONLY = "You can only output JSON, no explanations."
-    PERSONALITY_YAML_ONLY = "You can only output YAML, no explanations."
-
-    MODEL_LLAMA33 = "llama3.3:latest" # Default and recommended model
-    MODEL_LLAMA32_VISION = "llama3.2-vision:latest" # For image generation
-
     def __init__(self):
         self.url = "https://ai.create.kcl.ac.uk/"
         self.token = open(os.path.expanduser("~/.config/aihub/token")).read().strip()
         self.headers = {"Authorization": "Bearer " + self.token}
-        self.set_system(AIHub.PERSONALITY_DEFAULT)
+        self.set_system("You are a helpful AI assistant.")
 
     def set_system(self, personality):
         self.personality = personality
@@ -28,38 +20,15 @@ class AIHub:
 
     def check_model(self, model, images=False):
         if model == "auto":
-            if images:
-                model = AIHub.MODEL_LLAMA32_VISION
-            else:
-                model = AIHub.MODEL_LLAMA33
+            model = "gemma3"
 
-        if images and model != AIHub.MODEL_LLAMA32_VISION:
-            raise Exception("Images are only supported with the MODEL_LLAMA32_VISION model")
+        if images and model != "gemma3":
+            raise Exception("Images are only supported with the gemma3 model")
 
         return model
 
     def prepare_image(self, image):
         return base64.b64encode(image).decode("utf-8")
-
-    def ask(self, prompt, images=[], model="auto"):
-        model = self.check_model(model, len(images) > 0)
-        data = {"model": model, "prompt": prompt, "stream": False}
-
-        if self.personality != AIHub.PERSONALITY_DEFAULT:
-            data["system"] = self.personality
-
-        if len(images) > 0:
-            data["images"] = [self.prepare_image(image) for image in images]
-
-        url = self.url + "ollama/api/generate"
-        response = requests.post(url, json=data, headers=self.headers)
-        response = response.json()
-        if "response" in response:
-            return response["response"]
-
-        if "detail" in response:
-            raise Exception(response["detail"])
-        raise Exception("Unknown error")
 
     def chat(self, prompt, images=[], model="auto"):
         model = self.check_model(model, len(images) > 0)
@@ -71,18 +40,24 @@ class AIHub:
 
         data = {
             "model": model,
-            "stream": False,
             "messages": self.chat_history,
         }
 
-        url = self.url + "ollama/api/chat"
+        url = self.url + "api/chat/completions"
         response = requests.post(url, json=data, headers=self.headers)
-        response = response.json()
-        if "message" in response:
-            message = response["message"]
-            self.chat_history.append(message)
-            return message["content"]
+        if response.status_code != 200:
+            raise Exception("Error: " + str(response.status_code))
 
-        if "detail" in response:
-            raise Exception(response["detail"])
+        response = response.json()
+
+        if "choices" in response:
+            choices = response["choices"]
+            if len(choices) == 0:
+                raise Exception("No choices returned")
+            message = choices[0]
+            if "message" in message:
+                message = message["message"]
+                self.chat_history.append(message)
+                return message["content"]
+
         raise Exception("Unknown error")
